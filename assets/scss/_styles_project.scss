@@ -1,0 +1,134 @@
+//
+// Project styles, imported by Docsy's td/_main.scss.
+//
+
+// Two stylesheets Docsy ships but deliberately does not import itself — its own site pulls them in
+// from here, and so must every project that wants them. Both need params.ui.showLightDarkModeMenu
+// set in hugo.toml to have any effect.
+
+// Syntax highlighting. hugo.toml uses class-based highlighting (noClasses = false), so Hugo emits
+// Chroma classes and the stylesheet supplies the colours. This is the stylesheet — one palette per
+// colour mode, scoped to [data-bs-theme]. Without it, Chroma classes are emitted and nothing styles
+// them, so every code block renders as flat body text in both modes.
+@import 'td/code-dark';
+
+// Contrast adjustments for dark mode.
+@import 'td/color-adjustments-dark';
+
+// --- Diagrams -------------------------------------------------------------
+//
+// Mermaid is configured with useMaxWidth = false (see hugo.toml), so a diagram is drawn at its
+// natural size rather than scaled to fit the text column. That keeps its labels at full size —
+// fitting the domain-model class diagram to the column rendered its 16px text at roughly 4px —
+// at the cost of some diagrams being wider than the column, so the container scrolls.
+// Selector note: Docsy styles these as `.td-content pre.mermaid` (it sets background-color,
+// font-size and padding there). A plain `.td-content .mermaid` loses to that on specificity, so the
+// element is named here too — otherwise the padding below is silently reset to 0 and the diagram
+// sits flush against its border.
+//
+// The frame follows the reader's colour mode: Bootstrap 5.3 redefines --bs-border-color and
+// --bs-body-bg per mode, so no dark-mode override is needed here. Mermaid itself is switched to its
+// own dark theme by Docsy when data-bs-theme="dark".
+.td-content pre.mermaid {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.375rem;
+  background-color: var(--bs-body-bg);
+
+  // Bootstrap's `svg { max-width: 100% }` would undo the natural sizing above.
+  svg {
+    max-width: none;
+    height: auto;
+  }
+}
+
+// The text column is comfortable for prose but tight for a wide diagram. On large screens let
+// diagrams, wide tables and code blocks use the space to the right of the column that the page
+// is not otherwise using, so there is less to scroll.
+@include media-breakpoint-up(xl) {
+  .td-content {
+    pre.mermaid,
+    .table-responsive,
+    .highlight {
+      width: calc(100% + 8rem);
+      max-width: calc(100vw - 30rem);
+    }
+  }
+}
+
+// --- Landing page bands in dark mode ---------------------------------------
+//
+// Docsy special-cases only `td-box--white` to follow the colour mode (it maps to --bs-body-bg);
+// every other box colour, `light` included, is a literal value from the palette. The landing page
+// alternates bands to separate its sections, so in dark mode that left one glaring white band with
+// black text in the middle of an otherwise dark page.
+//
+// Give `light` the mode's own "slightly raised surface" colour instead. The alternation survives in
+// both modes, and no band fights the reader's choice.
+[data-bs-theme='dark'] {
+  .td-box--light {
+    color: var(--bs-body-color);
+    background-color: var(--bs-tertiary-bg);
+
+    .td-arrow-down::before {
+      border-color: var(--bs-tertiary-bg) transparent transparent transparent;
+    }
+
+    // Links inside the band keep the light-mode blue otherwise (about 2.8:1 on the raised surface).
+    a:not(.btn) {
+      color: var(--bs-link-color);
+    }
+  }
+}
+
+// --- Links inside the primary band --------------------------------------------
+//
+// Docsy lightens links in coloured bands (`.td-box--primary p > a`), which is right for the dark and
+// secondary bands but leaves the landing page's lead paragraph with a pale blue, underlined
+// "Overview" link on the primary blue: about 2.1:1, and it is 24px text. White on the band is about
+// 4.5:1 and stays underlined, so it still reads as a link.
+.td-box--primary a:not(.btn) {
+  color: #fff;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+// --- Adjacent bands of the same colour ---------------------------------------
+//
+// Every band carries 80px of padding top and bottom. Two bands of the same colour in a row read as
+// one section, so a heading band and its three columns were
+// separated by 160px of nothing. Drop the lower band's top padding so the pair spaces like a single
+// band: heading, then columns, 80px apart. Docsy puts a zero-height anchor <div> between consecutive
+// blocks (for deep links), so the bands are not adjacent siblings and the selector has to step over it.
+.td-box--dark + div + .td-box--dark {
+  padding-top: 0;
+}
+
+// --- Section menu on small screens ---------------------------------------------
+//
+// Docsy pulls the collapsible section menu out by 15px on each side to cancel the sidebar's
+// padding, but Bootstrap 5.3's gutter is 12px, so with the menu open it is 6px wider than the
+// viewport and the page can be panned sideways by 3px. Match the pull to the real gutter.
+@include media-breakpoint-down(md) {
+  .td-sidebar-nav {
+    margin-left: -12px;
+    margin-right: -12px;
+  }
+}
+
+// --- Wide tables ----------------------------------------------------------
+//
+// Several reference tables (the endpoint listings, the configuration tables) are wider than
+// the column on small screens. Scroll them rather than letting them force the page sideways.
+.td-content > table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+

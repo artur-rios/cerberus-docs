@@ -1,16 +1,7 @@
 {
-  "name": "cerberus-docs",
-  "private": true,
-  "description": "Documentation site for the Cerberus end-to-end encrypted vault",
-  "scripts": {
-    "get:submodule": "git submodule update --init --depth 1",
-    "_prepare:docsy": "cd themes/docsy && npm run install:theme-deps",
-    "prepare": "npm run get:submodule && npm run _prepare:docsy",
-    "hugo": "node scripts/hugo.mjs",
-    "serve": "node scripts/hugo.mjs server",
-    "build": "node scripts/hugo.mjs --minify --gc --cleanDestinationDir"
-  },
   "devDependencies": {
-    "sass-embedded": "1.106.1"
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "postcss-cli": "^11.0.1"
   }
 }

@@ -1,70 +1,151 @@
-# Cerberus documentation
+# cerberus-docs
 
-The documentation site for **Cerberus**, an end-to-end encrypted vault: the
-[Cerberus API](https://git.techcraftsmen.net/artur-rios/cerberus-api) (.NET 10) and the
-[Cerberus UI](https://git.techcraftsmen.net/artur-rios/cerberus-ui) (Flutter).
+The documentation portal for [Cerberus](https://github.com/artur-rios/cerberus-api), an end-to-end
+encrypted vault for credentials, passwords, notes and any other sensitive record: a .NET API that
+stores only ciphertext, and the Flutter client where the vault is actually opened. This site explains
+what Cerberus is, how it is put together, its security model, how each flow works, how to run and
+operate it, and what its API offers. The REST API page renders a copy of cerberus-api's OpenAPI
+contract.
 
-It is a [Hugo](https://gohugo.io/) site using the [Docsy](https://www.docsy.dev/) theme, written in
-Markdown with [Mermaid](https://mermaid.js.org/) diagrams.
+**[docs.artur-rios.tech/cerberus-docs](https://docs.artur-rios.tech/cerberus-docs/)**
 
-## Prerequisites
+This repository contains documentation only. It builds no software and ships no package.
 
-- **Hugo extended** 0.160.1 or later.
-- **Node.js** 24 or later and npm.
-- **Git**, for the theme submodule.
+## The project
 
-## Set up
+| Repository | What it holds |
+|---|---|
+| [cerberus-api](https://github.com/artur-rios/cerberus-api) | The .NET API: encrypted storage, ownership, sharing, synchronization and retention. |
+| [cerberus-ui](https://github.com/artur-rios/cerberus-ui) | The Flutter client for web, Windows, Linux and Android. |
+| [cerberus-docs](https://github.com/artur-rios/cerberus-docs) | This site. |
+
+## Running it locally
+
+**Requirements:** [Hugo extended](https://gohugo.io/installation/) 0.158 or newer — the
+configuration uses `locale` and `languages.*.label`, which arrived in that release; the site image
+builds with 0.165.0 — the [Go toolchain](https://go.dev/dl/) — Docsy is consumed as a Hugo Module —
+and Node with npm, for Docsy's PostCSS pipeline. Python 3.11 or newer is needed only for the checks
+below (the checker imports `tomllib`).
 
 ```bash
-git clone --recurse-submodules <this repository>
+git clone https://git.techcraftsmen.net/artur-rios/cerberus-docs.git
 cd cerberus-docs
-npm install
+npm ci
+hugo server
 ```
 
-`npm install` restores the Docsy submodule at its recorded revision (`themes/docsy`, pinned to
-`v0.18.1`), installs the theme's runtime dependencies, and installs `sass-embedded`, the Dart Sass
-compiler Docsy needs.
+The site is then at <http://localhost:1313/cerberus-docs/>.
 
-## Run and build
+To reproduce what the image builds:
 
 ```bash
-npm run serve
+hugo --minify
 ```
+
+## Writing pages
+
+- Diagrams are [Mermaid](https://mermaid.js.org/) code blocks. In a sequence diagram a `;` ends the
+  statement, so keep semicolons out of messages and notes.
+- Link between pages by their path from the site's root (`/docs/flows/sharing/`). The link render
+  hook (`layouts/_markup/render-link.html`) resolves it against the site's address, so it works
+  under `/cerberus-docs/` in production and in `hugo server`.
+- The REST API page renders `static/openapi/cerberus-api.json`, a copy of cerberus-api's
+  `docs/contracts/openapi.json`. Refresh it when the contract changes:
+
+  ```bash
+  cp ../cerberus-api/docs/contracts/openapi.json static/openapi/cerberus-api.json
+  ```
+
+## Checking it
+
+Jenkins' `build` check builds the site image on every pull request, and the image builds the site and
+then checks it, so a site that fails the check fails the pull request and is never deployed. The
+check is that required pages exist, internal links and anchors resolve, Hugo printed no unexpected
+warnings, and no placeholder text is left. To run the same check locally:
 
 ```bash
-npm run build
+hugo --minify 2>&1 | tee hugo.log && python scripts/check_site.py --public public --build-log hugo.log
 ```
 
-`npm run serve` serves the site at <http://localhost:1313/> with live reload; `npm run build`
-writes the static site to `public/`. Both go through `scripts/hugo.mjs`, which puts the native Dart
-Sass compiler from `sass-embedded` on `PATH` before running Hugo; any Hugo command works through
-`npm run hugo -- <args>`.
+The pages that must exist are listed in `scripts/required_pages.txt`. The checker has its own tests:
+
+```bash
+python -m unittest discover -s scripts -p "test_*.py"
+```
 
 ## Layout
 
-| Path | Contents |
-| --- | --- |
-| `hugo.toml` | Site configuration. |
-| `content/en/_index.md` | The landing page. |
-| `content/en/docs/` | The documentation, one folder per section; the sidebar order comes from each page's `weight`. |
-| `static/openapi/cerberus-api.json` | A copy of the API's OpenAPI contract, rendered on the REST API page. |
-| `themes/docsy/` | The Docsy theme (git submodule). |
-| `scripts/hugo.mjs` | The Hugo wrapper. |
-
-## Updating the API contract
-
-The REST API page renders `static/openapi/cerberus-api.json`. Refresh it from the API repository
-when the contract changes:
-
-```bash
-cp ../cerberus-api/docs/contracts/openapi.json static/openapi/cerberus-api.json
+```txt
+cerberus-docs/
+├── hugo.toml                 # site configuration
+├── go.mod                    # the Docsy theme, as a Hugo Module
+├── package.json              # autoprefixer + postcss-cli
+├── assets/scss/
+│   └── _styles_project.scss  # light/dark code-block styles, diagrams, tables
+├── content/en/
+│   ├── _index.md             # landing page
+│   └── docs/                 # the documentation
+├── layouts/_markup/
+│   └── render-link.html      # resolves root-relative links against the site's address
+├── static/openapi/           # the copy of cerberus-api's OpenAPI contract
+├── i18n/en.toml              # footer text
+├── scripts/
+│   ├── check_site.py         # post-build site checker
+│   ├── test_check_site.py    # tests for the checker
+│   └── required_pages.txt    # pages that must be built
+├── LICENSE
+├── .wakatime-project         # editor time-tracking project name
+├── ci/build.sh               # the pull request check: builds the image
+├── yggdrasil.yml             # what Jenkins checks
+├── Dockerfile                # builds, checks and serves the site
+├── .dockerignore
+├── renovate.json             # dependency updates
+└── .gitattributes
 ```
 
-## Deploying
+Content lives under `content/en/` so a translation can be added alongside it without restructuring.
 
-Set `baseURL` in `hugo.toml` to the site's address, run `npm run build`, and serve `public/` with
-any static web server.
+## Updating the theme
 
-## License
+`go.mod` pins Docsy to v0.15.0 on purpose, as in the other docs sites. v0.16.0 moved the actual theme
+(`layouts/`, `assets/`) into a git submodule that Go's module zip does not include, so it resolves as
+a Hugo Module but builds no output.
 
-Copyright (c) 2026 Artur Rios. The Docsy theme is licensed under Apache 2.0.
+Bumping the version therefore needs a real check, not just a green `go get`:
+
+```bash
+hugo mod get -u github.com/google/docsy
+hugo --minify
+```
+
+Only commit the resulting `go.mod` and `go.sum` once that build has actually produced
+`public/index.html` — an empty or missing `public/` means the new version is broken the same way
+v0.16.0 was, and the pin should stay.
+
+## Deployment
+
+The site is deployed by Jenkins, from the yggdrasil pipeline: every push to `main` builds the
+`Dockerfile` and deploys the image to production, where it is served at
+<https://docs.artur-rios.tech/cerberus-docs/>. The image answers `/healthz` for the status check. The
+address comes from the build arguments `PUBLIC_HOST` and `PUBLIC_PATH`, which the deploy passes, so
+the `baseURL` in `hugo.toml` only matters for `hugo server`.
+
+Every pull request is checked by Jenkins' `build` check (`yggdrasil.yml`, run by `ci/build.sh`),
+which builds the same image without pushing or running it, and the site check above runs inside that
+build.
+
+To build the image locally:
+
+```bash
+docker build -t cerberus-docs \
+  --build-arg PUBLIC_HOST=docs.artur-rios.tech --build-arg PUBLIC_PATH=/cerberus-docs .
+docker run --rm -p 8080:8080 cerberus-docs
+```
+
+The site is then at <http://localhost:8080/cerberus-docs/>.
+
+## Contributing
+
+The GitHub repository is a read-only mirror for the real, open-source code of cerberus-docs. Its home
+is Forgejo, at https://git.techcraftsmen.net/artur-rios/cerberus-docs. If you want to contribute,
+e-mail me at arturdev@duck.com.
