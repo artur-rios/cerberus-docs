@@ -1,0 +1,89 @@
+baseURL = '/'
+title = 'Cerberus'
+theme = ['docsy/theme']
+
+enableRobotsTXT = true
+enableGitInfo = false
+
+contentDir = 'content/en'
+defaultContentLanguage = 'en'
+defaultContentLanguageInSubdir = false
+
+# Docsy needs these output formats for its section pages and print view
+[outputs]
+home = ['HTML']
+page = ['HTML']
+section = ['HTML', 'print', 'RSS']
+
+[markup]
+[markup.goldmark.renderer]
+# Docsy renders HTML inside markdown (shortcodes, alerts)
+unsafe = true
+[markup.goldmark.parser.attribute]
+block = true
+[markup.highlight]
+noClasses = false
+style = 'tango'
+[markup.tableOfContents]
+startLevel = 2
+endLevel = 3
+
+[languages]
+[languages.en]
+label = 'English'
+title = 'Cerberus'
+[languages.en.params]
+description = 'An end-to-end encrypted vault for credentials, passwords, notes and custom sensitive records.'
+
+[params]
+copyright = 'Artur Rios'
+offlineSearch = true
+offlineSearchSummaryLength = 120
+offlineSearchMaxResults = 15
+
+[params.ui]
+showLightDarkModeMenu = true
+sidebar_menu_compact = true
+sidebar_menu_foldable = true
+sidebar_search_disable = false
+breadcrumb_disable = false
+navbar_logo = false
+ul_show = 2
+
+[params.ui.readingtime]
+enable = true
+
+[params.docsy.plugins.mermaid]
+enable = true
+
+[params.links]
+[[params.links.user]]
+name = 'Artur Rios'
+url = 'https://artur-rios.tech'
+icon = 'fa fa-user'
+[[params.links.developer]]
+name = 'Cerberus API on Forgejo'
+url = 'https://git.techcraftsmen.net/artur-rios/cerberus-api'
+icon = 'fa fa-server'
+[[params.links.developer]]
+name = 'Cerberus UI on Forgejo'
+url = 'https://git.techcraftsmen.net/artur-rios/cerberus-ui'
+icon = 'fa fa-mobile-screen'
+
+# Top navbar. Docsy builds the sidebar from the page tree — docs pages are not listed here.
+[menu]
+[[menu.main]]
+identifier = 'docs'
+name = 'Documentation'
+url = '/docs/'
+weight = 10
+[[menu.main]]
+identifier = 'api-reference'
+name = 'API Reference'
+url = '/docs/reference/rest-api/'
+weight = 20
+[[menu.main]]
+identifier = 'forgejo'
+name = 'Source'
+url = 'https://git.techcraftsmen.net/artur-rios'
+weight = 100
