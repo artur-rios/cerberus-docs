@@ -3,6 +3,8 @@ title = 'Documentation'
 linkTitle = 'Docs'
 weight = 10
 description = 'Everything about Cerberus: what it is, how it is built, how it works and how to run it.'
+[menu.main]
+  weight = 10
 +++
 
 Cerberus is an **end-to-end encrypted vault** for credentials, passwords, notes and any other

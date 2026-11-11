@@ -1,0 +1,17 @@
+{{- /*
+  Link render hook.
+
+  The pages link to each other by their path from the site's root ("/docs/flows/sharing/"), but the
+  site is served under a path of its own (docs.artur-rios.tech/cerberus-docs/), which a root-relative
+  link would skip. Such a link is resolved against the site's baseURL instead, so it keeps working
+  wherever the site is served — under its path in production, at the root in `hugo server`.
+
+  Every other link — absolute URLs, protocol-relative ones, in-page anchors and relative paths — is
+  passed through untouched.
+*/ -}}
+{{- $dest := .Destination -}}
+{{- if and (hasPrefix $dest "/") (not (hasPrefix $dest "//")) -}}
+  {{- $dest = strings.TrimPrefix "/" $dest | relURL -}}
+{{- end -}}
+{{- $u := urls.Parse $dest -}}
+<a href="{{ $dest | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ if $u.IsAbs }} target="_blank" rel="noopener"{{ end }}>{{ .Text | safeHTML }}</a>

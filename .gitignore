@@ -1,8 +1,8 @@
 # Hugo
 /public/
 /resources/_gen/
-/assets/jsconfig.json
-.hugo_build.lock
+/.hugo_build.lock
 
 # Node
-node_modules/
+/node_modules/
+/hugo.log
