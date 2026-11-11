@@ -1,0 +1,12 @@
+{{- /*
+  Renders an OpenAPI document with Redoc: {{< redoc "openapi/cerberus-api.json" >}}, the path relative to the
+  site's root.
+
+  It replaces Docsy v0.15.0's shortcode of the same name, which loads redoc@latest: the latest bundle is an ES
+  module, and loaded as a classic script it stops at "Cannot use 'import.meta' outside a module" and draws
+  nothing. This one pins the last 2.x bundle, the version Docsy's later releases pin, and resolves the path
+  against the site's address, so it works under /cerberus-docs/ and in `hugo server`.
+*/ -}}
+{{- $spec := .Get 0 | relURL -}}
+<redoc spec-url="{{ $spec }}" hide-hostname="true" suppress-warnings="true" lazy-rendering native-scrollbars scroll-y-offset=".js-navbar-scroll"></redoc>
+<script src="https://cdn.jsdelivr.net/npm/redoc@2.5.4/bundles/redoc.standalone.js"></script>

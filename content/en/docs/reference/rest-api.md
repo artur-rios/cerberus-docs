@@ -168,4 +168,4 @@ See [Health probes](/docs/operations/health/) for what each probe reports.
 
 ## Interactive reference
 
-{{< redoc "../../../openapi/cerberus-api.json" >}}
+{{< redoc "openapi/cerberus-api.json" >}}
