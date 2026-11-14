@@ -21,18 +21,25 @@ This repository contains documentation only. It builds no software and ships no 
 
 ## Running it locally
 
-**Requirements:** [Hugo extended](https://gohugo.io/installation/) 0.158 or newer — the
-configuration uses `locale` and `languages.*.label`, which arrived in that release; the site image
+**Requirements:** [Hugo extended](https://gohugo.io/installation/) 0.160.1 or newer — the minimum of Docsy v0.18.1; the site image
 builds with 0.165.0 — the [Go toolchain](https://go.dev/dl/) — Docsy is consumed as a Hugo Module —
-and Node with npm, for Docsy's PostCSS pipeline. Python 3.11 or newer is needed only for the checks
+and Node with npm, for the theme's Bootstrap and Font Awesome and for Dart Sass. Python 3.11 or newer is needed only for the checks
 below (the checker imports `tomllib`).
 
 ```bash
 git clone https://git.techcraftsmen.net/artur-rios/cerberus-docs.git
 cd cerberus-docs
 npm ci
+export PATH="$PWD/node_modules/.bin:$PATH"
 hugo server
 ```
+
+Hugo runs Dart Sass, which Docsy compiles its SCSS with, as `sass` from the
+`PATH`; `npm ci` installs it as the `sass-embedded` package, hence the `export`.
+On Windows, npm also installs the pure-JavaScript `sass` package, whose `sass`
+command shadows the embedded one and cannot serve Hugo: put
+`node_modules/sass-embedded-win32-x64/dart-sass` on the `PATH` instead, or
+[install Dart Sass](https://gohugo.io/functions/css/sass/#dart-sass).
 
 The site is then at <http://localhost:1313/cerberus-docs/>.
 
@@ -79,7 +86,9 @@ python -m unittest discover -s scripts -p "test_*.py"
 cerberus-docs/
 ├── hugo.toml                 # site configuration
 ├── go.mod                    # the Docsy theme, as a Hugo Module
-├── package.json              # autoprefixer + postcss-cli
+├── package.json              # Dart Sass (sass-embedded), autoprefixer, postcss-cli
+├── package-lock.json
+├── packages/hugoautogen/      # the theme's npm packages (`hugo mod npm pack`)
 ├── assets/scss/
 │   └── _styles_project.scss  # light/dark code-block styles, diagrams, tables
 ├── content/en/
@@ -107,20 +116,23 @@ Content lives under `content/en/` so a translation can be added alongside it wit
 
 ## Updating the theme
 
-`go.mod` pins Docsy to v0.15.0 on purpose, as in the other docs sites. v0.16.0 moved the actual theme
-(`layouts/`, `assets/`) into a git submodule that Go's module zip does not include, so it resolves as
-a Hugo Module but builds no output.
-
-Bumping the version therefore needs a real check, not just a green `go get`:
+Docsy is the Hugo Module `github.com/docsy/docsy/theme`, at the version in
+`go.mod`. Since v0.16.0 the theme declares Bootstrap and Font Awesome as npm
+packages, which `hugo mod npm pack` writes into the `packages/hugoautogen`
+workspace of `package.json`. Moving the theme is therefore four commands, not
+one, or the stylesheets are built against the previous theme's Bootstrap:
 
 ```bash
-hugo mod get -u github.com/google/docsy
+hugo mod get github.com/docsy/docsy/theme@<version>
+hugo mod npm pack
+npm install
 hugo --minify
 ```
 
-Only commit the resulting `go.mod` and `go.sum` once that build has actually produced
-`public/index.html` — an empty or missing `public/` means the new version is broken the same way
-v0.16.0 was, and the pin should stay.
+Commit `go.mod`, `go.sum`, `package.json`, `package-lock.json` and
+`packages/` once that build has produced `public/index.html` without a
+warning. Run `hugo mod npm pack` again after any change to `package.json`
+too: Hugo warns that the npm dependencies are out of sync until it has.
 
 ## Deployment
 
